@@ -1,0 +1,23 @@
+/** loading screen */
+.x-mask.splashscreen {
+    background-color: white;
+    opacity: 1;
+}
+
+.x-mask-msg.splashscreen,
+.x-mask-msg.splashscreen div {
+    font-size: 16px;
+    font-weight: bold;
+    padding: 30px 5px 5px 5px;
+    border: none;
+    background: transparent top center;
+}
+
+.x-splash-icon {
+    background-image: url('../images/P2_Logo_Color_Small.png') !important;
+    background-repeat: no-repeat !important;
+    /*margin-top: -30px;*/
+    margin-bottom: 15px;
+    height: 158px;
+    width: 255px;
+}
