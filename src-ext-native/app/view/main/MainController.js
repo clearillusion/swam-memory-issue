@@ -20,29 +20,33 @@ Ext.define('CrashIssue.view.main.MainController', {
     this.redirectTo('logout');
   },
 
-  onUi: function() {
-    var me = this;
-    if(!me.window) {
-      me.window = Ext.create('Ext.window.Window', {
-        title: 'No content window hide/show',
-        closeAction: 'hide',
-        width: 300,
-        height: 200
-      });
-    }
-    me.window.setVisible(!me.window.isVisible());
-  },
-
   _begin: function(btn) {
     var me = this,
       vm = me.getViewModel();
+    me.getView().query('grid')[0].getStore().removeAll();
+    me.getView().query('cartesian')[0].getStore().removeAll();
     btn.disable();
     vm.set('result', 'Running...');
   },
 
-  _complete: function(btn) {
+  _complete: function(btn, groupingResult) {
     var me = this,
-      vm = me.getViewModel();
+      vm = me.getViewModel(),
+      chartStore = me.getView().query('cartesian')[0].getStore(),
+      gridStore = me.getView().query('grid')[0].getStore(),
+      chartData = [], gridData = [];
+    for(var dt in groupingResult) {
+      var values = groupingResult[dt], 
+        d = {
+          date: dt
+        };
+      for(var key in values) {
+        d[key] = values[key];
+      }
+      chartData.push(d);
+    }
+    chartStore.loadData(chartData);
+    gridStore.loadData(chartData);
     vm.set('result', '<span style="color: green;">Done</span>');
     btn.enable();
   },
@@ -53,16 +57,17 @@ Ext.define('CrashIssue.view.main.MainController', {
       sql = vm.get('query'),
       times = vm.get('times'),
       promises = [],
-      db = Ext.space.SecureSql.get(CrashIssue.User.getUser().username);
+      db = Ext.space.SecureSql.get(CrashIssue.User.getUser().username),
+      groupingResult;
     me._begin(btn);
     for(var i = 0; i < times; i++) {
       promises.push(db.query(sql).then(function(rows) {
         CrashIssue.log("Row count: " + rows.length);
-        me.groupBy(rows);
+        groupingResult = me.groupBy(rows);
       }));
     }
     Q.all(promises).then(function() {
-      me._complete(btn);
+      me._complete(btn, groupingResult);
     });
   },
 
@@ -71,38 +76,43 @@ Ext.define('CrashIssue.view.main.MainController', {
       vm = me.getViewModel(),
       sql = vm.get('query'),
       times = vm.get('times'),
-      promises = [];
+      promises = [],
+      groupingResult;
     me._begin(btn);
     CrashIssue.data.proxy.SecureSql.getOrOpenCommonDatabase(CrashIssue.User.getUser().username).then(function(db) {
       for(var i = 0; i < times; i++) {
         promises.push(Q(db.query(sql)).then(function(rows) {
           CrashIssue.log("Row count: " + rows.length);
-          me.groupBy(rows);
+          groupingResult = me.groupBy(rows);
         }));
       }
       Q.all(promises).then(function() {
-        me._complete(btn);
+        me._complete(btn, groupingResult);
       });
     });
   },
 
   groupBy: function(rows) {
     var result = {},
-      groups = this.getViewModel().get('groups').split(',');
-    for(var i = 0; i < groups.length; i++) {
-      var group = groups[i].split('.'),
-        key = group[0], op = group[1], col = group[2];
-      for(var j = 0; j < rows.length; j++) {
-        var row = rows[j],
-          k = row[key];
-        if(!result[k]) {
-          result[k] = {};
+      vm = this.getViewModel(),
+      groupKey = vm.get('groupKey'),
+      groups = vm.get('groups').split(',');
+    for(var j = 0; j < rows.length; j++) {
+      var row = rows[j],
+        rawDate = row[groupKey];
+      if(rawDate) {
+        var date = Ext.Date.format(Ext.Date.clearTime(new Date(rawDate)), 'Y-m-d');
+        if(!result[date]) {
+          result[date] = {};
         }
-        if(!result[k][col]) {
-          result[k][col] = 0;
-        }
-        if('sum'==op) {
-          result[k][col] += Number(row[col] || 0);
+        for(var i = 0; i < groups.length; i++) {
+          var g = groups[i].split('.'), op = g[0],  col = g[1];
+          if(!result[date][col]) {
+            result[date][col] = 0;
+          }
+          if('sum'==op) {
+            result[date][col] += Number(row[col] || 0);
+          }
         }
       }
     }
