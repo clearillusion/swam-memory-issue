@@ -81,6 +81,12 @@ Ext.define('CrashIssue.Util', {
     return BigInteger.parse(binary, 2).toString();
   },
 
+  columnToDisplayName: function(column) {
+    return column.split('_').map(function(c) {
+      return Ext.String.capitalize(c);
+    }).join(' ');
+  },
+
   /**
    * Delays a task by the specified time in milliseconds
    * @param config

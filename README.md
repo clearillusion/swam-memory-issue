@@ -16,11 +16,9 @@ The meaning of each fields:
 - `"Repeat"` - Repeat the query & grouping x number of times
 - `"Result"` - Indicator to show if the above process is done
 
-The query can either be executed using either Public SWAM API or P2 Customized API. As it goes, using some profiler tool, e.g Instruments to inspect the memory usage. It keeps climbing up even with some GC happens occasionally. Recommend to run it on a physical device as it's more restrictive.
+The query can either be executed using either "Public SWAM API" or "P2 Customized API". While executing, using some profiler tool, e.g Instruments to inspect the memory usage. It keeps climbing up even with some GC happens occasionally. Recommend to run it on a physical device as it's more restrictive.
 
-Button 'Some UI Work' is to show the grids/charts making use of the grouping result.(In progress...)
-
-Button 'Logout' is to break the app server session used for sync & promopt login.
+Button "Logout" is to break the app server session used for sync & promopt login.
 
 ## Additional
 P2 customized proxy & transaction management:

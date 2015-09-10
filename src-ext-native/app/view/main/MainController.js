@@ -22,18 +22,20 @@ Ext.define('CrashIssue.view.main.MainController', {
 
   _begin: function(btn) {
     var me = this,
+      view = me.getView(),
       vm = me.getViewModel();
-    me.getView().query('grid')[0].getStore().removeAll();
-    me.getView().query('cartesian')[0].getStore().removeAll();
+    view.query('grid')[0].getStore().removeAll();
+    view.query('cartesian')[0].getStore().removeAll();
     btn.disable();
     vm.set('result', 'Running...');
   },
 
   _complete: function(btn, groupingResult) {
     var me = this,
+      view = me.getView(),
       vm = me.getViewModel(),
-      chartStore = me.getView().query('cartesian')[0].getStore(),
-      gridStore = me.getView().query('grid')[0].getStore(),
+      chartStore = view.query('cartesian')[0].getStore(),
+      gridStore = view.query('grid')[0].getStore(),
       chartData = [], gridData = [];
     for(var dt in groupingResult) {
       var values = groupingResult[dt], 
